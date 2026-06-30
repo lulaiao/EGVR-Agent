@@ -1,0 +1,9 @@
+{
+    "base_dir": "<external_drugex_examples_dir>",
+    "drugex_repo_dir": "<external_drugex_repo_dir>",
+    "pretrained_model_graph": "<external_graph_model_pkg>",
+    "pretrained_model_rnn": "<external_rnn_model_pkg>",
+    "qsar_model_a2ar": "<external_qsar_model_meta_json>",
+    "default_input_prefix": "arl",
+    "default_test_fragments": "arl_test_graph.txt"
+}

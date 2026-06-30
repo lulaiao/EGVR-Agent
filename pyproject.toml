@@ -1,0 +1,133 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "FullCopilot"
+version = "0.1.0"
+description = "FullCopilot - trustworthy biomedical tool planning and execution verification"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "FullCopilot Contributors"}
+]
+requires-python = ">=3.11"
+dependencies = [
+    # LLM stack
+    "langchain-core>=0.3",
+    "langchain-openai>=0.2",
+    "langchain-anthropic>=0.2",
+    "langgraph>=0.2",
+    # Web backend
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "python-multipart>=0.0.9",  # FastAPI file uploads
+    "pydantic>=2.0",
+    # Utilities
+    "python-dotenv>=1.0",
+    "requests>=2.31",
+    "rich>=13.0",
+    "prompt_toolkit>=3.0",
+    # Jupyter kernel for code execution (real process isolation + true timeout)
+    "jupyter_client>=8.0",
+    "ipykernel>=6.0",
+    "cloudpickle>=3.0",
+    # PDF export
+    "markdown>=3.5",
+    "weasyprint>=60.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/<your-org>/FullCopilot"
+Repository = "https://github.com/<your-org>/FullCopilot"
+
+[project.optional-dependencies]
+# Legacy Gradio UI (superseded by the built-in Web UI)
+gradio = ["gradio>=5.0,<6.0"]
+# Chemistry toolkit extras
+chemistry = [
+    "rdkit",
+    "pyyaml",
+]
+# Development / testing
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "ruff>=0.5",
+]
+
+[project.scripts]
+cai = "CAi.main:main"
+fullcopilot = "CAi.main:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["CAi*"]
+exclude = ["tests*", "tutorials*", "example*", "docs*"]
+
+[tool.setuptools.package-data]
+"CAi.web_ui.frontend" = ["*.html", "*.css", "*.js"]
+
+# ---------------------------------------------------------------------------
+# Ruff linting
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+exclude = [
+    ".git",
+    ".venv",
+    "CAi/toolkit/server/tools/*/Lib-INVENT",  # vendored library
+    "CAi/toolkit/server/tools/*/REINVENT*",   # vendored library
+    "build",
+    "dist",
+]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = [
+    "F",      # Pyflakes
+    "E",      # Pycodestyle errors
+    "W",      # Pycodestyle warnings
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "TID",    # flake8-tidy-imports
+    "C4",     # flake8-comprehensions
+    "BLE",    # flake8-blind-except
+    "UP",     # pyupgrade
+    "RUF100", # Unused noqa
+    "TCH",    # Typing imports
+]
+ignore = [
+    "E501",   # line too long
+    "E731",   # lambda assignment
+    "E741",   # ambiguous variable names (I, O, l)
+    "D104", "D100", "D107", "D105", "D400", "D401", "D203", "D213",
+    "B008",   # function call in default argument
+    "N813",   # camelcase imported as lowercase
+    "E402",   # module import not at top of file
+    "PLR0913", "PLR0912", "PLR2004", "PLR0915",
+    "PLC0206", "PLC0415",
+    "BLE001", # blind exception
+    "B005",
+]
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (requires kernel operations or real LLM)",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]

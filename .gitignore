@@ -1,0 +1,59 @@
+# Local configuration and credentials
+.env
+*.env
+*.key
+*.pem
+secrets.*
+
+# Python/build caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.ruff_cache/
+
+# Runtime outputs
+logs/
+agent_workspace/
+tool_fill_logs/
+CAi/logs/
+CAi/toolkit/server/workspace/
+workspace/jobs/
+
+# Paper upload/output bundles
+paper/upload/
+paper/*.zip
+paper/main.pdf
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.toc
+
+# Large external datasets and generated data
+datasets/
+RxnFlow-old/
+PDBbind*/
+CrossDocked*/
+LIT-PCBA*/
+
+# Vendored tool source, model payloads, and checkpoints
+CAi/toolkit/server/tools/*/REINVENT*/
+CAi/toolkit/server/tools/*/RxnFlow/
+CAi/toolkit/server/tools/*/autodock_vina/
+CAi/toolkit/server/tools/*/models/
+CAi/toolkit/server/tools/*/trained_models/
+CAi/toolkit/server/tools/*/checkpoints/
+CAi/toolkit/server/tools/*/chemprop_model/
+CAi/toolkit/server/tools/*/*_model/
+*.ckpt
+*.pt
+*.pth
+*.pkg
+
+# OS/editor noise
+.DS_Store
+*.swp

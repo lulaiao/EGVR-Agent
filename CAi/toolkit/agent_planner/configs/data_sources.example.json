@@ -1,0 +1,16 @@
+{
+  "crossdocked": {
+    "root": "<external_crossdocked_root>",
+    "center_info_dir": "<external_crossdocked_root>/center_info",
+    "protein_dir": "<external_crossdocked_root>/protein",
+    "notes": "Configure locally. Do not commit raw CrossDocked data."
+  },
+  "lit_pcba": {
+    "root": "<external_lit_pcba_root>",
+    "notes": "Configure locally. Do not commit raw LIT-PCBA data."
+  },
+  "pdbbind_plus": {
+    "root": "<external_pdbbind_plus_root>",
+    "notes": "Configure locally. Do not commit raw PDBbind/PDBbind+ data."
+  }
+}
