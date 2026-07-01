@@ -1,8 +1,9 @@
 """Trustworthy planning primitives for FullCopilot.
 
-This package is intentionally independent from the main agent loop. The first
-phase exposes schemas and a structured chemistry tool registry that can be
-unit-tested without starting the tool server or loading model dependencies.
+This package is intentionally independent from the main agent loop. It exposes
+schemas, task-conditioned planning, execution records, verifier results, and
+offline biomedical evidence slices that can be unit-tested without starting the
+tool server or loading model dependencies.
 """
 
 from .task_schema import (
@@ -41,6 +42,7 @@ __all__ = [
     "JSONLTraceLogger",
     "BenchmarkCase",
     "BenchmarkRunner",
+    "BIOMEDICAL_GENERALIZATION_COLUMNS",
     "DataSourceManifest",
     "SUMMARY_COLUMNS",
     "ParsedTask",
@@ -82,6 +84,7 @@ __all__ = [
     "build_default_tool_registry",
     "build_master_baseline_rows",
     "build_master_baseline_table",
+    "build_biomedical_generalization_table",
     "build_paper_table_views",
     "escape_latex",
     "export_latex_tables",
@@ -110,6 +113,7 @@ __all__ = [
     "route_domain",
     "write_jsonl",
     "write_master_table",
+    "write_biomedical_generalization_table",
     "write_paper_table_views",
     "write_summary_csv",
     "render_latex_table",
@@ -179,6 +183,17 @@ def __getattr__(name: str):
 
         task_generalization_runner = import_module(f"{__name__}.task_generalization_runner")
         value = getattr(task_generalization_runner, name)
+        globals()[name] = value
+        return value
+    if name in {
+        "BIOMEDICAL_GENERALIZATION_COLUMNS",
+        "build_biomedical_generalization_table",
+        "write_biomedical_generalization_table",
+    }:
+        from importlib import import_module
+
+        biomedical_table = import_module(f"{__name__}.biomedical_generalization_table")
+        value = getattr(biomedical_table, name)
         globals()[name] = value
         return value
     if name in {

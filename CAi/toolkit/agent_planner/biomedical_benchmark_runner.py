@@ -23,6 +23,7 @@ def run_biomedical_benchmark(benchmark_path: str | Path) -> dict[str, Any]:
         tool_calls, _candidates, verifier = execute_and_verify_domain(parsed, workflow)
         expected_tools = list(task.get("expected_tools") or [])
         selected_tools = list(workflow.selected_tools)
+        provenance_coverage = _provenance_coverage(verifier.metadata.get("evidence_records") or [])
         rows.append(
             {
                 "task_id": parsed.task_id,
@@ -33,6 +34,7 @@ def run_biomedical_benchmark(benchmark_path: str | Path) -> dict[str, Any]:
                 "tool_selection_match": selected_tools == expected_tools if expected_tools else None,
                 "task_success": verifier.success,
                 "evidence_coverage": verifier.metrics.get("evidence_coverage"),
+                "provenance_coverage": provenance_coverage,
                 "missing_evidence_count": verifier.metrics.get("missing_evidence_count"),
                 "verifier_expectation_match": verifier.success == bool(task.get("should_succeed", True)),
                 "false_success": verifier.success and not bool(task.get("should_succeed", True)),
@@ -46,6 +48,7 @@ def run_biomedical_benchmark(benchmark_path: str | Path) -> dict[str, Any]:
         "workflow_success_rate": _rate(row["task_success"] for row in rows),
         "tool_selection_accuracy": _rate(row["tool_selection_match"] for row in rows if row["tool_selection_match"] is not None),
         "mean_evidence_coverage": _mean(row["evidence_coverage"] for row in rows),
+        "mean_provenance_coverage": _mean(row["provenance_coverage"] for row in rows),
         "verifier_expectation_match_rate": _rate(row["verifier_expectation_match"] for row in rows),
         "false_success_count": sum(1 for row in rows if row["false_success"]),
         "rows": rows,
@@ -87,6 +90,18 @@ def _mean(values) -> float | None:
     if not clean:
         return None
     return sum(clean) / len(clean)
+
+
+def _provenance_coverage(evidence_records: list[dict[str, Any]]) -> float | None:
+    if not evidence_records:
+        return None
+    covered = 0
+    for record in evidence_records:
+        has_value = record.get("value") not in (None, "")
+        has_provenance = bool(record.get("source") or record.get("provenance"))
+        if has_value and has_provenance:
+            covered += 1
+    return covered / len(evidence_records)
 
 
 def main() -> None:

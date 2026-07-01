@@ -30,8 +30,17 @@ python -m pytest tests/test_domain_router.py tests/test_clinical_trial_verifier.
 
 ```bash
 python -m CAi.toolkit.agent_planner.biomedical_benchmark_runner \
-  --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v1_offline.jsonl \
+  --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl \
   --output /tmp/fullcopilot_offline_summary.json
+```
+
+生成一个紧凑的 biomedical generalization 表：
+
+```bash
+python -m CAi.toolkit.agent_planner.biomedical_generalization_table \
+  --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl \
+  --benchmark CAi/toolkit/agent_planner/benchmarks/drug_target_evidence_v2_offline.jsonl \
+  --output /tmp/biomedical_generalization_table.json
 ```
 
 运行一个 mock benchmark 示例：

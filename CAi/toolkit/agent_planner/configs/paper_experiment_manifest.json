@@ -27,39 +27,39 @@
       "run_command": "python -m CAi.toolkit.agent_planner.benchmark_runner --benchmark CAi/toolkit/agent_planner/benchmarks/molecular_agent_tasks.example.jsonl --execution-mode mock --output /tmp/molecular_agent_tasks_example_mock.json"
     },
     {
-      "experiment_id": "clinical_trial_outcome_prediction_v1_offline",
+      "experiment_id": "clinical_trial_outcome_prediction_v2_offline",
       "benchmark_family": "clinical_trial_offline_generalization",
-      "benchmark_path": "CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v1_offline.jsonl",
+      "benchmark_path": "CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl",
       "execution_mode": "mock",
       "status": "ready_to_run",
       "baselines": ["rule_based_planner", "full_copilot"],
-      "paper_table_views": ["task_generalization"],
+      "paper_table_views": ["biomedical_generalization"],
       "primary_metrics": ["workflow_success_rate", "evidence_coverage", "verifier_expectation_match", "false_success_count"],
-      "run_command": "python -m CAi.toolkit.agent_planner.biomedical_benchmark_runner --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v1_offline.jsonl --output /tmp/clinical_trial_outcome_prediction_v1_offline_summary.json"
+      "run_command": "python -m CAi.toolkit.agent_planner.biomedical_benchmark_runner --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl --output /tmp/clinical_trial_outcome_prediction_v2_offline_summary.json"
     },
     {
-      "experiment_id": "drug_target_evidence_v1_offline",
+      "experiment_id": "drug_target_evidence_v2_offline",
       "benchmark_family": "drug_target_offline_generalization",
-      "benchmark_path": "CAi/toolkit/agent_planner/benchmarks/drug_target_evidence_v1_offline.jsonl",
+      "benchmark_path": "CAi/toolkit/agent_planner/benchmarks/drug_target_evidence_v2_offline.jsonl",
       "execution_mode": "mock",
       "status": "ready_to_run",
       "baselines": ["rule_based_planner", "full_copilot"],
-      "paper_table_views": ["task_generalization"],
+      "paper_table_views": ["biomedical_generalization"],
       "primary_metrics": ["tool_selection_accuracy", "evidence_coverage", "provenance_coverage", "verifier_expectation_match"],
-      "run_command": "python -m CAi.toolkit.agent_planner.biomedical_benchmark_runner --benchmark CAi/toolkit/agent_planner/benchmarks/drug_target_evidence_v1_offline.jsonl --output /tmp/drug_target_evidence_v1_offline_summary.json"
+      "run_command": "python -m CAi.toolkit.agent_planner.biomedical_benchmark_runner --benchmark CAi/toolkit/agent_planner/benchmarks/drug_target_evidence_v2_offline.jsonl --output /tmp/drug_target_evidence_v2_offline_summary.json"
     }
   ],
   "recommended_next_run_order": [
     "molecular_agent_tasks_example_mock",
-    "clinical_trial_outcome_prediction_v1_offline",
-    "drug_target_evidence_v1_offline"
+    "clinical_trial_outcome_prediction_v2_offline",
+    "drug_target_evidence_v2_offline"
   ],
   "paper_tables": {
-    "task_generalization_table": {
+    "biomedical_generalization_table": {
       "csv": "",
       "json": "",
       "latex": "",
-      "notes": "Generated from offline slices in a local run; not committed as a real-result claim."
+      "notes": "Generated from offline biomedical slices in a local run; reports evidence workflow behavior, not clinical or DTI predictive performance."
     }
   }
 }

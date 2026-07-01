@@ -1,6 +1,6 @@
 {
   "manifest_id": "tool_admission_cards_v1",
-  "paper_claim": "Trustworthy molecular-design agents need task-conditioned tool exposure and execution-grounded verifier evidence, not larger tool inventories alone.",
+  "paper_claim": "Trustworthy biomedical tool-using agents need task-conditioned tool exposure and execution-grounded verifier evidence, not larger tool inventories alone.",
   "tool_admission_cards": [
     {
       "tool_name": "rdkit_property_verifier",
@@ -35,7 +35,7 @@
     {
       "tool_name": "clinical_trial_metadata_parser",
       "tool_role": "offline_evidence_parser",
-      "independent_evidence": "Trial identifier, phase, condition, intervention, and endpoint fields for ClinicalAgent-style workflow coverage.",
+      "independent_evidence": "Trial identifier, phase, condition, intervention, and endpoint fields for clinical-trial evidence workflow coverage.",
       "failure_modes_structured": true,
       "runtime_cost": "low",
       "environment_risk": "low",
@@ -65,7 +65,7 @@
     {
       "tool_name": "drug_target_evidence_checker",
       "tool_role": "offline_verifier",
-      "independent_evidence": "Drug, target, mechanism, knowledge-graph provenance, and literature provenance fields for DrugAgent-style tasks.",
+      "independent_evidence": "Drug, target, mechanism, knowledge-graph provenance, and literature provenance fields for drug-target evidence tasks.",
       "failure_modes_structured": true,
       "runtime_cost": "low",
       "environment_risk": "low",
@@ -75,7 +75,7 @@
     {
       "tool_name": "repurposing_evidence_checker",
       "tool_role": "offline_verifier",
-      "independent_evidence": "Disease indication and repurposing rationale evidence for DrugAgent-style tasks.",
+      "independent_evidence": "Disease indication and repurposing rationale evidence for drug-target evidence tasks.",
       "failure_modes_structured": true,
       "runtime_cost": "low",
       "environment_risk": "low",

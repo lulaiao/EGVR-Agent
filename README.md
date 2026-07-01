@@ -46,8 +46,17 @@ Run an offline benchmark example:
 
 ```bash
 python -m CAi.toolkit.agent_planner.biomedical_benchmark_runner \
-  --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v1_offline.jsonl \
+  --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl \
   --output /tmp/fullcopilot_offline_summary.json
+```
+
+Build a compact biomedical generalization table:
+
+```bash
+python -m CAi.toolkit.agent_planner.biomedical_generalization_table \
+  --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl \
+  --benchmark CAi/toolkit/agent_planner/benchmarks/drug_target_evidence_v2_offline.jsonl \
+  --output /tmp/biomedical_generalization_table.json
 ```
 
 Run a mock benchmark example:

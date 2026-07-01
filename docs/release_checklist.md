@@ -30,6 +30,7 @@ The release audit must report zero blocking findings before pushing.
 ## Paper Scope Reminder
 
 The public repository should describe FullCopilot as a trustworthy biomedical
-agent framework. Molecular design is the main evaluated domain. Clinical trial
-and drug-target tasks are offline generalization examples and should not be
-described as ClinicalAgent or DrugAgent replications.
+agent framework. Molecular design is the primary real-tool evaluation domain.
+Clinical-trial and drug-target tasks are offline evidence-workflow
+generalization examples and should not be described as predictive benchmarks or
+replications of external systems.

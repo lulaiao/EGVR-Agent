@@ -1,9 +1,9 @@
 """Offline biomedical task planning and verification.
 
-These helpers intentionally do not call ClinicalAgent, DrugAgent, or external
-clinical resources. They provide a lightweight generalization slice for testing
-whether the FullCopilot planning/verification abstractions transfer beyond
-molecular design without making clinical or DTI performance claims.
+These helpers intentionally do not call external clinical or DTI prediction
+systems. They provide lightweight generalization slices for testing whether the
+FullCopilot planning/verification abstractions transfer beyond molecular design
+without making clinical or DTI performance claims.
 """
 
 from __future__ import annotations
@@ -156,7 +156,7 @@ def plan_biomedical_workflow(parsed_task: ParsedTask) -> PlannedWorkflow:
             selected_tools=[step.tool_name for step in steps],
             tool_sequence=steps,
             expected_outputs=["clinical_evidence_records", "verifier_result"],
-            notes=["Offline ClinicalAgent-style generalization slice; no clinical performance claim."],
+            notes=["Offline clinical-trial evidence generalization slice; no clinical performance claim."],
         )
 
     steps = [
@@ -180,7 +180,7 @@ def plan_biomedical_workflow(parsed_task: ParsedTask) -> PlannedWorkflow:
         selected_tools=[step.tool_name for step in steps],
         tool_sequence=steps,
         expected_outputs=["drug_target_evidence_records", "verifier_result"],
-        notes=["Offline DrugAgent-style generalization slice; no DTI or repurposing SOTA claim."],
+        notes=["Offline drug-target evidence generalization slice; no DTI or repurposing SOTA claim."],
     )
 
 
