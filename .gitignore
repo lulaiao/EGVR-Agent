@@ -24,6 +24,13 @@ workspace/jobs/
 
 # Paper upload/output bundles
 paper/upload/
+paper/data/
+paper/results/
+paper/tables/
+paper/figures/data/
+paper/*.csv
+paper/*.json
+paper/*.jsonl
 paper/*.zip
 paper/main.pdf
 paper/*.aux
