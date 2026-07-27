@@ -1,109 +1,228 @@
 # EGVR-Agent
 
+[![CI](https://github.com/lulaiao/EGVR-Agent/actions/workflows/ci.yml/badge.svg)](https://github.com/lulaiao/EGVR-Agent/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
+
+[English](README.md) | [中文](README_zh.md)
+
 EGVR-Agent is the research artifact for **Evidence Before Success:
 Execution-Grounded Verification and Targeted Repair for Biomedical Tool-Using
 Agents**.
 
-The repository implements an evidence-first reliability layer around external
-tools. A task is complete only when the executor's recorded outputs satisfy the
-task-specific verifier. Missing or malformed evidence can authorize a bounded
-retry or declared fallback; otherwise the run remains explicitly incomplete.
+It provides an evidence-first reliability layer around external tools. A task
+is complete only when recorded execution outputs satisfy task-specific
+verifier checks. Missing or malformed evidence may authorize a bounded retry
+or declared fallback; otherwise the run remains explicitly incomplete.
 
-## What Is Implemented
+## Why EGVR-Agent?
 
-- Structured task, workflow, tool-call, candidate, evidence, and verifier records.
-- Task-conditioned planning over a typed tool registry.
-- Deterministic dispatch of declared calls, without runtime LLM-written code.
-- Output normalization across heterogeneous backends.
-- Execution-grounded evidence checks and conservative success gating.
-- Verifier-guided retry/fallback with explicit repair budgets.
-- JSONL traces and consistency audits.
-- Controlled reliability, tool-menu, LLM-router, and biomedical evidence runners.
-
-The repository is intentionally a research artifact rather than a general chat
-application. It contains no Web UI, conversation manager, REPL shell, model
-weights, private traces, or bundled scientific tools.
-
-## Repository Layout
+Tool completion is not the same as task completion. EGVR-Agent separates:
 
 ```text
-egvr/
-├── task_schema.py                # Typed execution records
-├── task_parser.py                # Deterministic task normalization
-├── rule_planner.py               # Task-conditioned workflow construction
-├── tool_registry.py              # Typed tool capabilities and dependencies
-├── executor.py                   # Structured dispatch and call recording
-├── result_normalizer.py          # Backend output normalization
-├── verifier.py                   # Evidence-gated task completion
-├── repair.py                     # Bounded retry and fallback policies
-├── trace_logger.py               # JSONL provenance
-├── adapters/                     # Optional external backend contract
-├── benchmarks/                   # Lightweight public benchmark definitions
-└── *_runner.py                   # Evaluation and artifact builders
-tests/                            # Network-free regression tests
-scripts/                          # Offline artifact and release audits
-docs/                             # Architecture and reproducibility notes
+Task -> Plan -> Execute -> Normalize -> Verify -> Repair or Incomplete -> Trace
 ```
 
-## Quick Start
+- **Task-conditioned planning** exposes only tools relevant to the task.
+- **Deterministic execution** dispatches declared calls instead of running
+  LLM-written code.
+- **Execution-grounded verification** checks the outputs and artifacts that
+  actually exist.
+- **Targeted repair** is bounded by verifier reasons and an explicit budget.
+- **Traceable decisions** are written as structured JSONL records.
+
+This repository is a research artifact, not a chat application. It intentionally
+contains no Web UI, conversation manager, model weights, private traces,
+licensed datasets, or bundled scientific tools.
+
+## Requirements
+
+- Python 3.11 or newer
+- Linux or macOS for the public offline workflow
+- No API key, GPU, model weight, or tool server for the quick demo
+- Optional real-tool execution requires an independently deployed backend
+
+## Installation
+
+Clone the repository and create an environment named after the method:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+git clone https://github.com/lulaiao/EGVR-Agent.git
+cd EGVR-Agent
 
-python -m pytest \
-  tests/test_benchmark_runner.py \
-  tests/test_verifier.py \
-  tests/test_repair.py \
-  tests/test_trace_consistency_audit_runner.py
+conda create -n egvr-agent python=3.11 -y
+conda activate egvr-agent
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
 ```
 
-Run the network-free paper artifact:
+Without Conda, use a method-named virtual environment directory:
 
 ```bash
-python scripts/run_offline_artifact.py \
-  --output-dir /tmp/egvr_artifact
+python3.11 -m venv .egvr-agent-venv
+source .egvr-agent-venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
 ```
 
-Run one lightweight benchmark:
+## 30-Second Demo
+
+Run a complete parser-planner-executor-verifier-trace workflow with local mock
+tools:
 
 ```bash
-python -m egvr.benchmark_runner \
+python -m examples.minimal_mock \
+  --output-dir /tmp/egvr-agent-demo
+```
+
+Expected summary:
+
+```json
+{
+  "candidate_count": 2,
+  "failure_reason": null,
+  "selected_tools": [
+    "reinvent4_denovo",
+    "scscore",
+    "toxicity"
+  ],
+  "task_id": "public_minimal_demo",
+  "task_success": true,
+  "tool_call_count": 4,
+  "trace_path": "/tmp/egvr-agent-demo/YYYYMMDD_traces.jsonl"
+}
+```
+
+The example is network-free. It demonstrates that nominal tool outputs are
+normalized and checked before success is recorded.
+
+## Use Your Own Python Tools
+
+Application-owned functions can be injected without changing the executor:
+
+```bash
+python -m examples.custom_tool_adapter
+```
+
+The complete example is in
+[`examples/custom_tool_adapter.py`](examples/custom_tool_adapter.py). The core
+pattern is:
+
+```python
+from egvr import WorkflowExecutor, parse_task, plan_workflow, verify_workflow
+
+task = parse_task("Generate de novo molecules and evaluate synthesizability.")
+workflow = plan_workflow(task)
+executor = WorkflowExecutor(
+    tool_functions={
+        "reinvent4_denovo": my_generator,
+        "scscore": my_synthesis_evaluator,
+    }
+)
+calls, candidates = executor.execute(task, workflow)
+result = verify_workflow(task, workflow, calls, candidates)
+print(result.success, result.failure_reason)
+```
+
+Tool functions return dictionaries. EGVR-Agent records their inputs, outputs,
+errors, elapsed time, normalized candidates, and verifier decision.
+
+## CLI
+
+After installation, run a lightweight public benchmark:
+
+```bash
+egvr-benchmark \
   --benchmark egvr/benchmarks/molecular_agent_tasks.example.jsonl \
   --execution-mode mock \
   --planner-baseline egvr_agent \
-  --output /tmp/egvr_mock_summary.json
+  --output /tmp/egvr-mock-summary.json
 ```
 
-## Optional External Tools
+Equivalent module entry point:
 
-Real execution is connected through the small HTTP contract in
-`egvr.adapters.tool_server`. Set:
+```bash
+python -m egvr.benchmark_runner --help
+```
+
+Run the larger network-free paper artifact:
+
+```bash
+python scripts/run_offline_artifact.py \
+  --output-dir /tmp/egvr-artifact
+```
+
+See [`ARTIFACT.md`](ARTIFACT.md) for generated files and scientific boundaries.
+
+## Connect an External Tool Service
+
+Set the service URL:
 
 ```bash
 export EGVR_TOOL_SERVER_URL=http://127.0.0.1:8001
 ```
 
-The server must expose:
+The client in
+[`egvr/adapters/tool_server.py`](egvr/adapters/tool_server.py) uses this small
+asynchronous HTTP contract:
 
-- `POST /run/{tool}/{action}`
-- `GET /job/{job_id}`
-- `GET /health`
+```http
+GET /health
+```
 
-Scientific tool implementations, environments, model weights, and datasets are
-not distributed here. This keeps the reliability framework separable from any
-particular molecular or clinical backend.
+```json
+{"status": "ok", "tools": ["generator", "evaluator"]}
+```
 
-## Scope
+```http
+POST /run/{tool}/{action}
+Content-Type: application/json
 
-Public offline tasks demonstrate mechanism behavior and evidence-interface
-transfer. They do not claim molecular-generation quality, clinical prediction,
-DTI, ADMET, or drug-discovery state of the art. Real-tool paper measurements,
-provider responses, private backend I/O, and licensed datasets are not included.
+{"input": "application-defined payload"}
+```
 
-The legacy result identifier `full_copilot` remains readable for artifact
-compatibility. New runs should use `egvr_agent`.
+```json
+{"job_id": "job-123"}
+```
+
+```http
+GET /job/job-123
+```
+
+While running:
+
+```json
+{"status": "running"}
+```
+
+When complete:
+
+```json
+{
+  "status": "finished",
+  "data": {
+    "success": true,
+    "summary": {},
+    "results": {}
+  }
+}
+```
+
+Failed jobs return `{"status": "failed", "data": ...}`. Missing, malformed,
+timed-out, or failed outputs remain failed evidence; the adapter never converts
+backend availability into scientific success.
+
+## Repository Layout
+
+```text
+egvr/                  # Planning, execution, verification, repair, and runners
+egvr/adapters/         # Optional external backend contract
+egvr/benchmarks/       # Lightweight public benchmark definitions
+examples/              # Network-free user-facing examples
+tests/                 # Network-free regression tests
+scripts/               # Offline artifact and release audits
+docs/                  # Architecture and reproducibility documentation
+```
 
 ## Reproducibility
 
@@ -112,15 +231,42 @@ compatibility. New runs should use `egvr_agent`.
 - [Reproducibility guide](docs/reproducibility.md)
 - [Paper-to-code map](docs/paper_artifact_mapping.md)
 - [Release checklist](docs/release_checklist.md)
-- [Naming and standalone migration](docs/naming_and_migration.md)
+- [Naming and compatibility notes](docs/naming_and_migration.md)
 
-Before release:
+Run the public checks:
 
 ```bash
+python -m pytest
 python scripts/audit_release_tree.py --root .
 ```
 
+## Scope
+
+Public offline tasks validate mechanism behavior and evidence-interface
+transfer. They do not reproduce private real-tool measurements or claim
+molecular-generation quality, clinical prediction, DTI, ADMET, or
+drug-discovery state of the art. Provider responses, private backend I/O, model
+weights, and licensed datasets are not included.
+
+## Troubleshooting
+
+- **`ModuleNotFoundError: egvr`**: activate `egvr-agent` and rerun
+  `python -m pip install -e ".[dev]"` from the repository root.
+- **Unsupported Python version**: verify `python --version` is 3.11 or newer.
+- **Tool server unavailable**: use `--execution-mode mock`, or check
+  `EGVR_TOOL_SERVER_URL` and `GET /health`.
+- **Real tool returns success but verification fails**: inspect
+  `failure_reason`, required checks, tool outputs, and referenced artifacts in
+  the JSONL trace. This is expected conservative behavior.
+- **Replaying older result files**: see the compatibility policy in
+  [`docs/naming_and_migration.md`](docs/naming_and_migration.md).
+
+## Citation
+
+Citation metadata is available in [`CITATION.cff`](CITATION.cff). The final
+paper BibTeX entry will be added when the paper becomes public.
+
 ## License And Attribution
 
-The repository is released under Apache-2.0. See [NOTICE](NOTICE) for the
-historical compatibility boundary and third-party attribution.
+EGVR-Agent is released under Apache-2.0. See [`NOTICE`](NOTICE) for historical
+compatibility boundaries and third-party attribution.

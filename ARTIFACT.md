@@ -28,9 +28,12 @@ testable.
 
 ## Quick Artifact Check
 
-Create a Python 3.11 environment and install the development dependencies:
+Create a Python 3.11 environment named after the method and install the
+development dependencies:
 
 ```bash
+conda create -n egvr-agent python=3.11 -y
+conda activate egvr-agent
 pip install -e ".[dev]"
 ```
 

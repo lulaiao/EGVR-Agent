@@ -7,11 +7,20 @@
 - Offline artifact checks do not require an API key, GPU, model weight, or tool
   server.
 
-Install:
+Install in a Conda environment named after the method:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+conda create -n egvr-agent python=3.11 -y
+conda activate egvr-agent
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+```
+
+Or use a method-named virtual environment directory:
+
+```bash
+python3.11 -m venv .egvr-agent-venv
+source .egvr-agent-venv/bin/activate
 pip install --upgrade pip
 pip install -e ".[dev]"
 ```

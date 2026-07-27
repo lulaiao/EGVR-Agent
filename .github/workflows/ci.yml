@@ -28,6 +28,7 @@ jobs:
             tests/test_trace_consistency_audit_runner.py \
             tests/test_tool_menu_comparison_runner.py \
             tests/test_external_tool_adapter.py \
+            tests/test_public_examples.py \
             tests/test_clinical_trial_verifier.py \
             tests/test_drug_target_verifier.py
       - name: Run release audit
