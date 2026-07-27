@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from CAi.toolkit.agent_planner import pdbbindplus_pose_sanity_runner as runner
+from egvr import pdbbindplus_pose_sanity_runner as runner
 
 
 def test_pdbbindplus_pose_sanity_runner_gates_on_stable_pose_inputs(tmp_path, monkeypatch):

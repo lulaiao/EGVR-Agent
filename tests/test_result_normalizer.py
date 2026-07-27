@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from CAi.toolkit.agent_planner.result_normalizer import normalize_tool_output, rank_candidates
-from CAi.toolkit.agent_planner.task_schema import CandidateRecord
+from egvr.result_normalizer import normalize_tool_output, rank_candidates
+from egvr.task_schema import CandidateRecord
 
 
 def test_normalizer_extracts_generation_smiles():

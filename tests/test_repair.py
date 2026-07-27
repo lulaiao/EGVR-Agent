@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from CAi.toolkit.agent_planner.repair import suggest_repair
-from CAi.toolkit.agent_planner.rule_planner import plan_workflow
-from CAi.toolkit.agent_planner.task_schema import CandidateRecord, ParsedTask, TaskConstraints, ToolCallRecord, VerifierResult
+from egvr.repair import suggest_repair
+from egvr.rule_planner import plan_workflow
+from egvr.task_schema import CandidateRecord, ParsedTask, TaskConstraints, ToolCallRecord, VerifierResult
 
 
 def test_repair_adds_denovo_fallback_after_rxnflow_failure():
@@ -21,6 +21,37 @@ def test_repair_adds_denovo_fallback_after_rxnflow_failure():
     assert repair_plan.should_retry is True
     assert repair_plan.actions[0].tool_name == "reinvent4_denovo"
     assert repair_plan.repaired_workflow is not None
+
+
+def test_repair_fallback_inherits_requested_candidate_budget():
+    task = ParsedTask(
+        task_id="task-pocket-budget",
+        raw_user_query="generate 5 molecules for pocket",
+        task_type="pocket_conditioned_generation",
+        constraints=TaskConstraints(max_candidates=5),
+        protein_path="agent_workspace/1HVR.pdb",
+        pocket_center=[1, 2, 3],
+    )
+    workflow = plan_workflow(task)
+    calls = [ToolCallRecord(tool_name="rxnflow", success=False, error="boom")]
+
+    repair_plan = suggest_repair(
+        task,
+        workflow,
+        calls,
+        [],
+        VerifierResult(success=False, failure_reason="no candidates"),
+    )
+
+    fallback_action = repair_plan.actions[0]
+    fallback_step = next(
+        step
+        for step in repair_plan.repaired_workflow.tool_sequence
+        if step.tool_name == "reinvent4_denovo" and step.parameters.get("fallback") is True
+    )
+    assert fallback_action.parameters == {"fallback": True, "num_variants": 5}
+    assert fallback_step.tool_name == "reinvent4_denovo"
+    assert fallback_step.parameters == {"fallback": True, "num_variants": 5}
 
 
 def test_repair_reduces_mol2mol_count_and_adds_fallback():

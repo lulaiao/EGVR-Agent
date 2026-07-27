@@ -1,63 +1,85 @@
-# FullCopilot
+# EGVR-Agent
 
-FullCopilot 是一个面向可信工具调用的 biomedical agent 框架。它将用户请求解析为结构化任务，按任务选择必要工具，执行工具调用，并用 verifier 检查真实输出是否足以支持任务完成。
+EGVR-Agent 是论文 **Evidence Before Success: Execution-Grounded
+Verification and Targeted Repair for Biomedical Tool-Using Agents** 的代码
+artifact。
 
-## 核心思想
+项目实现的是外部工具之上的可信执行层：只有真实执行输出满足任务对应的
+verifier checks，系统才声明任务成功。证据缺失或格式错误时，verifier 可以
+授权有预算限制的 targeted retry 或已声明 fallback；不可恢复的情况会明确
+保留为 incomplete/failed。
 
-FullCopilot 关注的不是“给大模型更多工具”，而是让 agent 在执行后留下可验证证据：选了什么工具、为什么调用、工具返回了什么、哪些证据通过验证、失败时如何修复或明确标记未完成。
+## 核心模块
 
-## 主要功能
+- 结构化 `ParsedTask`、`PlannedWorkflow`、`ToolCallRecord`、
+  `CandidateRecord`、`EvidenceRecord` 和 `VerifierResult`。
+- 基于 typed tool registry 的 task-conditioned planning。
+- 按声明参数执行工具，不依赖 LLM 临场编写执行代码。
+- 将异构 backend 输出归一化为稳定证据对象。
+- execution-grounded verification 与 conservative success gate。
+- verifier-guided retry/fallback 和显式 repair budget。
+- JSONL trace、重复记录检测和一致性审计。
+- controlled reliability、tool-menu、LLM-router 和 biomedical evidence
+  benchmark runners。
 
-- 将自然语言请求解析为 `ParsedTask`。
-- 根据任务目标生成 `PlannedWorkflow`。
-- 通过结构化 executor 调用工具或 offline wrapper。
-- 将工具输出归一化为候选结果和证据记录。
-- 使用 verifier 检查 SMILES、分数、证据字段、provenance 等是否完整。
-- 在证据缺失或工具失败时执行 conservative repair / fallback。
-- 保存 JSONL execution trace，便于复现、审计和后续学习型 planner 训练。
-- 提供 benchmark runner、baseline runner 和 release audit 工具。
+本仓库定位为论文研究代码，而不是通用聊天产品，因此不包含 Web UI、对话
+管理器、REPL 外壳、模型权重、私有 traces 或第三方科学工具源码。
+
+## 目录
+
+```text
+egvr/                  # 规划、执行、验证、修复和评测核心
+egvr/adapters/         # 可选外部 backend HTTP contract
+egvr/benchmarks/       # 轻量公开 benchmark
+tests/                 # 无网络回归测试
+scripts/               # 离线 artifact 与发布审计
+docs/                  # 架构、复现和 claim 映射
+```
 
 ## 快速开始
 
 ```bash
-conda create -n fullcopilot python=3.11
-conda activate fullcopilot
+python -m venv .venv
+source .venv/bin/activate
 pip install -e ".[dev]"
-python -m pytest tests/test_domain_router.py tests/test_clinical_trial_verifier.py tests/test_drug_target_verifier.py
+
+python scripts/run_offline_artifact.py \
+  --output-dir /tmp/egvr_artifact
 ```
 
-运行一个 offline benchmark 示例：
+运行 mock benchmark：
 
 ```bash
-python -m CAi.toolkit.agent_planner.biomedical_benchmark_runner \
-  --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl \
-  --output /tmp/fullcopilot_offline_summary.json
-```
-
-生成一个紧凑的 biomedical generalization 表：
-
-```bash
-python -m CAi.toolkit.agent_planner.biomedical_generalization_table \
-  --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl \
-  --benchmark CAi/toolkit/agent_planner/benchmarks/drug_target_evidence_v2_offline.jsonl \
-  --output /tmp/biomedical_generalization_table.json
-```
-
-运行一个 mock benchmark 示例：
-
-```bash
-python -m CAi.toolkit.agent_planner.benchmark_runner \
-  --benchmark CAi/toolkit/agent_planner/benchmarks/molecular_agent_tasks.example.jsonl \
+python -m egvr.benchmark_runner \
+  --benchmark egvr/benchmarks/molecular_agent_tasks.example.jsonl \
   --execution-mode mock \
-  --output /tmp/fullcopilot_mock_summary.json
+  --planner-baseline egvr_agent \
+  --output /tmp/egvr_mock_summary.json
 ```
 
-## 发布边界
+## 外部工具接口
 
-GitHub 首版只包含核心代码、轻量示例 benchmark、测试和文档；不包含 `.env`、API key、真实 logs、trace、workspace、模型权重、大型数据集或第三方工具源码下载物。
+真实工具通过 `egvr.adapters.tool_server` 接入：
 
-发布前请执行：
+```bash
+export EGVR_TOOL_SERVER_URL=http://127.0.0.1:8001
+```
+
+外部服务只需实现 `/run/{tool}/{action}`、`/job/{job_id}` 和 `/health`
+接口。科学工具、模型、环境和数据集由使用者独立安装，不与可信执行框架绑定。
+
+## Claim 边界
+
+公开 offline tasks 验证机制行为和 evidence-interface transfer，不声称分子
+生成、临床预测、DTI、ADMET 或药物发现 SOTA。论文真实工具结果、模型供应商
+响应、私有 backend I/O 和受许可证约束的数据均不进入公开仓。
+
+旧结果中的 `full_copilot` 标识仍可读取；新实验统一使用 `egvr_agent`。
+
+发布前运行：
 
 ```bash
 python scripts/audit_release_tree.py --root .
 ```
+
+项目采用 Apache-2.0，历史兼容边界和来源说明见 [NOTICE](NOTICE)。

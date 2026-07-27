@@ -1,5 +1,0 @@
-{
-  "name": "rxnflow",
-  "conda_env": "rxnflow",
-  "gpu": true
-}

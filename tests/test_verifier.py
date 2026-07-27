@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from CAi.toolkit.agent_planner.task_schema import (
+from egvr.task_schema import (
     CandidateRecord,
     ParsedTask,
     PlannedToolCall,
@@ -8,7 +8,7 @@ from CAi.toolkit.agent_planner.task_schema import (
     TaskConstraints,
     ToolCallRecord,
 )
-from CAi.toolkit.agent_planner.verifier import verify_workflow
+from egvr.verifier import verify_workflow
 
 
 def test_verifier_success_for_scored_ranked_candidates():

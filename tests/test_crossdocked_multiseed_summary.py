@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from CAi.toolkit.agent_planner.crossdocked_multiseed_summary import build_crossdocked_multiseed_summary
+from egvr.crossdocked_multiseed_summary import build_crossdocked_multiseed_summary
 
 
 def test_crossdocked_multiseed_summary_aggregates_seed_rows(tmp_path):

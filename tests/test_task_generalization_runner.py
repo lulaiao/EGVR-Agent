@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import csv
 
-from CAi.toolkit.agent_planner.task_generalization_runner import run_task_generalization_summary
+from egvr.task_generalization_runner import run_task_generalization_summary
 
 
 def test_task_generalization_runner_groups_mock_tasks_by_type(tmp_path):
-    benchmark = "CAi/toolkit/agent_planner/benchmarks/task_generalization_v1.jsonl"
+    benchmark = "egvr/benchmarks/task_generalization_v1.jsonl"
 
     payload = run_task_generalization_summary(
         benchmark,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from CAi.toolkit.agent_planner.biomedical_offline import parse_biomedical_task, plan_biomedical_workflow
+from egvr.biomedical_offline import parse_biomedical_task, plan_biomedical_workflow
 
 
 def test_clinical_trial_parser_extracts_nct_and_fields():

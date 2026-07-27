@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 import json
 
-from CAi.toolkit.agent_planner.master_table_builder import (
+from egvr.master_table_builder import (
     ABLATION_TABLE_COLUMNS,
     AMBIGUOUS_FAILURE_MODE_TABLE_COLUMNS,
     AMBIGUOUS_FAILURE_MODE_REPEATED_TABLE_COLUMNS,
@@ -958,7 +958,7 @@ def test_master_table_builder_accepts_failure_taxonomy_suite_summary(tmp_path):
         encoding="utf-8",
     )
 
-    taxonomy_benchmark = tmp_path / "CAi" / "toolkit" / "agent_planner" / "benchmarks" / "failure_recovery_taxonomy_v2.jsonl"
+    taxonomy_benchmark = tmp_path / "egvr" / "benchmarks" / "failure_recovery_taxonomy_v2.jsonl"
     taxonomy_benchmark.parent.mkdir(parents=True)
     taxonomy_tasks = [
         {

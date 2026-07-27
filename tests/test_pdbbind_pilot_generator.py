@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from CAi.toolkit.agent_planner.pdbbind_pilot_generator import (
+from egvr.pdbbind_pilot_generator import (
     discover_ready_target_dirs,
     generate_pdbbind_pilot_tasks,
     load_refined_affinity_index,

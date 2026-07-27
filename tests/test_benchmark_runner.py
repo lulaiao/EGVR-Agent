@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import pytest
 
-from CAi.toolkit.agent_planner.benchmark_runner import BenchmarkRunner, load_benchmark_cases, summarize_results
+from egvr.benchmark_runner import BenchmarkRunner, load_benchmark_cases, summarize_results
 
 
 def test_benchmark_runner_loads_jsonl_and_runs_mock_pipeline(tmp_path):
@@ -178,6 +178,75 @@ def test_full_copilot_executes_repair_after_verifier_failure(tmp_path):
     assert result["metrics"]["valid_smiles_count"] == 2
 
 
+def test_egvr_agent_is_the_public_repair_baseline(tmp_path):
+    benchmark = tmp_path / "tasks.jsonl"
+    benchmark.write_text(
+        json.dumps(
+            {
+                "task_id": "egvr-repair-denovo",
+                "raw_user_query": "Generate 2 molecules de novo for synthesizability.",
+                "expected_task_type": "de_novo_generation",
+                "expected_tools": ["reinvent4_denovo", "scscore"],
+                "should_succeed": True,
+                "mock_outputs": {
+                    "reinvent4_denovo": [
+                        {"success": False, "error": "controlled initial failure"},
+                        {"success": True, "molecules_smiles": ["CCN", "CCO"]},
+                    ]
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = BenchmarkRunner(execution_mode="mock", planner_baseline="egvr_agent").run_file(benchmark)
+    result = payload["results"][0]
+
+    assert payload["planner_baseline"] == "egvr_agent"
+    assert result["planner_type"] == "egvr_agent"
+    assert result["repair_executed"] is True
+    assert result["repair_success"] is True
+    assert result["task_success"] is True
+
+
+def test_full_copilot_respects_explicit_repair_budget(tmp_path):
+    benchmark = tmp_path / "tasks.jsonl"
+    benchmark.write_text(
+        json.dumps(
+            {
+                "task_id": "repair-budget",
+                "raw_user_query": "Generate 2 molecules de novo for synthesizability.",
+                "expected_task_type": "de_novo_generation",
+                "expected_tools": ["reinvent4_denovo", "scscore"],
+                "should_succeed": True,
+                "mock_outputs": {
+                    "reinvent4_denovo": [
+                        {"success": False, "error": "initial failure"},
+                        {"success": False, "error": "first repair failure"},
+                        {"success": True, "molecules_smiles": ["CCN", "CCO"]},
+                    ]
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    no_repair = BenchmarkRunner(
+        execution_mode="mock", planner_baseline="full_copilot", repair_budget=0
+    ).run_file(benchmark)["results"][0]
+    two_rounds = BenchmarkRunner(
+        execution_mode="mock", planner_baseline="full_copilot", repair_budget=2
+    ).run_file(benchmark)["results"][0]
+
+    assert no_repair["repair_executed"] is False
+    assert no_repair["repair_rounds_executed"] == 0
+    assert no_repair["task_success"] is False
+    assert two_rounds["repair_executed"] is True
+    assert two_rounds["repair_rounds_executed"] == 2
+    assert len(two_rounds["repair_plan_history"]) == 2
+    assert two_rounds["task_success"] is True
+
+
 def test_failure_injection_applies_before_mock_recovery_output(tmp_path):
     benchmark = tmp_path / "tasks.jsonl"
     benchmark.write_text(
@@ -218,6 +287,74 @@ def test_benchmark_runner_rejects_unknown_baseline():
         BenchmarkRunner(execution_mode="mock", planner_baseline="unknown")
 
 
+def test_tool_status_only_separates_nominal_success_from_verified_success(tmp_path):
+    benchmark = tmp_path / "tasks.jsonl"
+    benchmark.write_text(
+        json.dumps(
+            {
+                "task_id": "status-only-missing-evidence",
+                "raw_user_query": "Generate 1 molecule de novo for synthesizability.",
+                "expected_task_type": "de_novo_generation",
+                "expected_tools": ["reinvent4_denovo", "scscore"],
+                "should_succeed": True,
+                "metadata": {
+                    "failure_injections": {
+                        "scscore": [
+                            {
+                                "call_index": 1,
+                                "output": {"success": True, "results": []},
+                            }
+                        ]
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = BenchmarkRunner(execution_mode="mock", planner_baseline="tool_status_only").run_file(benchmark)
+    result = payload["results"][0]
+
+    assert result["agent_claimed_success"] is True
+    assert result["evidence_verified_success"] is False
+    assert result["task_success"] is False
+    assert payload["summary"]["false_success_count"] == 1
+
+
+def test_targeted_retry_no_fallback_filters_fallback_action(tmp_path):
+    benchmark = tmp_path / "tasks.jsonl"
+    benchmark.write_text(
+        json.dumps(
+            {
+                "task_id": "mol2mol-no-fallback",
+                "raw_user_query": "Optimize hit_smiles=CCO for synthesizability and toxicity.",
+                "expected_task_type": "hit_to_lead_optimization",
+                "expected_tools": ["reinvent4_mol2mol", "scscore", "toxicity"],
+                "should_succeed": True,
+                "mock_outputs": {
+                    "reinvent4_mol2mol": [
+                        {"success": False, "error": "transient"},
+                        {"success": True, "molecules_smiles": ["CCN"]},
+                    ]
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = BenchmarkRunner(
+        execution_mode="mock",
+        planner_baseline="verifier_targeted_retry_no_fallback",
+    ).run_file(benchmark)
+    result = payload["results"][0]
+
+    assert result["repair_executed"] is True
+    assert result["repair_success"] is True
+    assert result["fallback_executed"] is False
+    assert all(action["action_type"] != "fallback_tool" for action in result["repair_plan"]["actions"])
+    assert result["repair_tool_call_count"] > 0
+
+
 def test_summarize_results_handles_empty_input():
     assert summarize_results([]) == {
         "total": 0,
@@ -233,10 +370,21 @@ def test_summarize_results_handles_empty_input():
         "planner_tool_f1": 0.0,
         "verifier_expectation_match": 0.0,
         "task_success_rate": 0.0,
+        "agent_claim_success_rate": 0.0,
+        "evidence_verified_success_rate": 0.0,
         "mean_selected_tool_count": 0.0,
         "mean_tool_sequence_length": 0.0,
         "mean_extra_tool_count": 0.0,
         "mean_tool_call_count": 0.0,
+        "mean_backend_call_count": 0.0,
+        "mean_initial_tool_call_count": 0.0,
+        "mean_initial_backend_call_count": 0.0,
+        "mean_repair_tool_call_count": 0.0,
+        "mean_repair_backend_call_count": 0.0,
+        "mean_repair_round_count": 0.0,
+        "mean_candidate_evaluation_call_count": 0.0,
+        "fallback_count": 0,
+        "fallback_rate": 0.0,
         "failed_tool_call_count": 0,
         "tool_call_failure_rate": 0.0,
         "mean_total_elapsed_sec": 0.0,

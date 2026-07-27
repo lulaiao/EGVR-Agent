@@ -1,27 +1,32 @@
-# MANIFEST.in
+include README.md
+include README_zh.md
+include LICENSE
+include NOTICE
+include CITATION.cff
+include ARTIFACT.md
+include pyproject.toml
 
-# Include all python files from the biomni package
-recursive-include biomni *.py
+recursive-include egvr *.py *.json *.jsonl *.md
+recursive-include docs *.md
 
-# Include the .pkl database files
-recursive-include biomni/tool/schema_db *.pkl
-
-# Include specific files from biomni_env, but not the biomni_tools subdirectory
-recursive-include biomni_env *.py *.sh *.yml *.yaml *.txt *.md *.json *.R
-
-# Exclude specific directories that are not part of the package
-prune tutorials/data
-prune biomni_env/biomni_tools
-
-# Exclude build artifacts and caches
-global-exclude *.py[co]
-global-exclude __pycache__
-global-exclude .ruff_cache
+prune tests
+prune logs
+prune datasets
+prune external_backends
+prune private_benchmarks
+prune agent_workspace
+prune paper
 prune build
 prune dist
-prune *.egg-info
 
-# Include other necessary files
-include README.md
-include LICENSE
-include pyproject.toml
+global-exclude .env
+global-exclude *.key
+global-exclude *.pem
+global-exclude *.py[co]
+global-exclude __pycache__
+global-exclude .pytest_cache
+global-exclude .ruff_cache
+global-exclude *.ckpt
+global-exclude *.pt
+global-exclude *.pth
+global-exclude *.safetensors

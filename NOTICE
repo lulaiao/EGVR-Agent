@@ -1,0 +1,19 @@
+EGVR-Agent
+Copyright 2026 EGVR-Agent contributors
+
+This distribution is licensed under the Apache License, Version 2.0.
+
+Historical compatibility note:
+Earlier development used the Apache-2.0-licensed CAi Molecule Design Copilot
+as an application scaffold:
+https://github.com/datamllab/CAi_copilot
+
+The submission artifact has since been separated into the standalone `egvr`
+research package. The original CAi conversational shell, Web UI, CLI, REPL,
+skills, utilities, and bundled tool-server application are not part of the
+EGVR-Agent artifact. The new package focuses on structured task planning,
+execution records, evidence verification, bounded repair, trace auditing, and
+reliability benchmarks.
+
+The names and trademarks of upstream projects are used only to describe origin
+and compatibility. They do not imply endorsement.

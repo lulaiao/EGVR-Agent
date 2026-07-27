@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from CAi.toolkit.agent_planner.task_schema import ToolMetadata
-from CAi.toolkit.agent_planner.tool_registry import ChemistryToolRegistry, build_default_tool_registry
+from egvr.task_schema import ToolMetadata
+from egvr.tool_registry import EvidenceToolRegistry, build_default_tool_registry
 
 
 CORE_TOOLS = {
@@ -61,7 +61,7 @@ def test_registry_exposes_downstream_tools():
 
 
 def test_registry_register_and_require_behavior():
-    registry = ChemistryToolRegistry()
+    registry = EvidenceToolRegistry()
     tool = ToolMetadata(
         tool_name="demo",
         description="Demo",

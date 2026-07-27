@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from CAi.toolkit.agent_planner.biomedical_benchmark_runner import run_biomedical_benchmark
+from egvr.biomedical_benchmark_runner import run_biomedical_benchmark
 
 
 def test_biomedical_benchmark_runner_summarizes_clinical_v2_slice():
     summary = run_biomedical_benchmark(
-        "CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl"
+        "egvr/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl"
     )
 
     assert summary["benchmark_id"] == "clinical_trial_outcome_prediction_v2_offline"
@@ -19,7 +19,7 @@ def test_biomedical_benchmark_runner_summarizes_clinical_v2_slice():
 
 def test_biomedical_benchmark_runner_summarizes_drug_target_v2_slice():
     summary = run_biomedical_benchmark(
-        "CAi/toolkit/agent_planner/benchmarks/drug_target_evidence_v2_offline.jsonl"
+        "egvr/benchmarks/drug_target_evidence_v2_offline.jsonl"
     )
 
     assert summary["benchmark_id"] == "drug_target_evidence_v2_offline"

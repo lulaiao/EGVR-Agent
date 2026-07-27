@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from CAi.toolkit.agent_planner.task_parser import RuleBasedTaskParser, parse_task
+from egvr.task_parser import RuleBasedTaskParser, parse_task
 
 
 def test_parser_extracts_pocket_conditioned_generation_fields():

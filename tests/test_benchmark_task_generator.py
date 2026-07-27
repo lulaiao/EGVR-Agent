@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from CAi.toolkit.agent_planner.benchmark_task_generator import (
+from egvr.benchmark_task_generator import (
     DataSourceManifest,
     VinaPreparationConfig,
     generate_crossdocked_pocket_tasks,
@@ -12,8 +12,8 @@ from CAi.toolkit.agent_planner.benchmark_task_generator import (
     mol2_center,
     write_jsonl,
 )
-from CAi.toolkit.agent_planner.rule_planner import plan_workflow
-from CAi.toolkit.agent_planner.task_parser import parse_task
+from egvr.rule_planner import plan_workflow
+from egvr.task_parser import parse_task
 
 
 def test_mol2_center_uses_heavy_atoms_by_default(tmp_path):

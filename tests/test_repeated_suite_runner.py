@@ -3,11 +3,11 @@ from __future__ import annotations
 import csv
 import json
 
-from CAi.toolkit.agent_planner.repeated_suite_runner import run_repeated_baseline_suite
+from egvr.repeated_suite_runner import run_repeated_baseline_suite
 
 
 def test_repeated_suite_runner_aggregates_mock_failure_taxonomy(tmp_path):
-    benchmark = "CAi/toolkit/agent_planner/benchmarks/failure_recovery_taxonomy_v2.jsonl"
+    benchmark = "egvr/benchmarks/failure_recovery_taxonomy_v2.jsonl"
 
     payload = run_repeated_baseline_suite(
         benchmark,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from CAi.toolkit.agent_planner.biomedical_offline import (
+from egvr.biomedical_offline import (
     execute_biomedical_offline,
     parse_biomedical_task,
     plan_biomedical_workflow,

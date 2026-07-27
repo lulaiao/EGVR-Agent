@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from CAi.toolkit.agent_planner.natural_failure_audit_runner import run_natural_failure_audit
+from egvr.natural_failure_audit_runner import run_natural_failure_audit
 
 
 def test_natural_failure_audit_aggregates_trace_and_prep_failures(tmp_path):

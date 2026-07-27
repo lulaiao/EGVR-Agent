@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from CAi.toolkit.agent_planner.baseline_suite_runner import run_baseline_suite
+from egvr.baseline_suite_runner import run_baseline_suite
 
 
 def test_baseline_suite_runner_writes_table_ready_outputs(tmp_path):
@@ -100,7 +100,7 @@ def test_baseline_suite_runner_rejects_unknown_baseline(tmp_path):
 
 
 def test_failure_recovery_mock_slice_shows_full_copilot_repair_benefit(tmp_path):
-    benchmark = "CAi/toolkit/agent_planner/benchmarks/failure_recovery_mock_v1.jsonl"
+    benchmark = "egvr/benchmarks/failure_recovery_mock_v1.jsonl"
 
     payload = run_baseline_suite(
         benchmark,
@@ -118,7 +118,7 @@ def test_failure_recovery_mock_slice_shows_full_copilot_repair_benefit(tmp_path)
 
 
 def test_failure_recovery_real_or_injected_slice_runs_in_mock_mode(tmp_path):
-    benchmark = "CAi/toolkit/agent_planner/benchmarks/failure_recovery_real_or_injected_v1.jsonl"
+    benchmark = "egvr/benchmarks/failure_recovery_real_or_injected_v1.jsonl"
 
     payload = run_baseline_suite(
         benchmark,
@@ -136,7 +136,7 @@ def test_failure_recovery_real_or_injected_slice_runs_in_mock_mode(tmp_path):
 
 
 def test_failure_recovery_taxonomy_v2_runs_in_mock_mode(tmp_path):
-    benchmark = "CAi/toolkit/agent_planner/benchmarks/failure_recovery_taxonomy_v2.jsonl"
+    benchmark = "egvr/benchmarks/failure_recovery_taxonomy_v2.jsonl"
 
     payload = run_baseline_suite(
         benchmark,
@@ -154,7 +154,7 @@ def test_failure_recovery_taxonomy_v2_runs_in_mock_mode(tmp_path):
 
 
 def test_failure_recovery_taxonomy_v2_repair_ablation_baselines_run_in_mock_mode(tmp_path):
-    benchmark = "CAi/toolkit/agent_planner/benchmarks/failure_recovery_taxonomy_v2.jsonl"
+    benchmark = "egvr/benchmarks/failure_recovery_taxonomy_v2.jsonl"
 
     payload = run_baseline_suite(
         benchmark,
@@ -177,7 +177,7 @@ def test_failure_recovery_taxonomy_v2_repair_ablation_baselines_run_in_mock_mode
 
 
 def test_ambiguous_evidence_slice_separates_scheduled_fallback_from_full_copilot(tmp_path):
-    benchmark = "CAi/toolkit/agent_planner/benchmarks/failure_recovery_ambiguous_evidence_v1.jsonl"
+    benchmark = "egvr/benchmarks/failure_recovery_ambiguous_evidence_v1.jsonl"
 
     payload = run_baseline_suite(
         benchmark,

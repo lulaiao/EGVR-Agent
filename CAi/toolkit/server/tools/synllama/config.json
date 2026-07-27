@@ -1,5 +1,0 @@
-{
-  "name": "synllama",
-  "conda_env": "synllama",
-  "gpu": true
-}

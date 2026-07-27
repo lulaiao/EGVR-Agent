@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from CAi.toolkit.agent_planner import llm_router_baseline_runner as runner_mod
-from CAi.toolkit.agent_planner.llm_router_baseline_runner import run_llm_router_baseline
+from egvr import llm_router_baseline_runner as runner_mod
+from egvr.llm_router_baseline_runner import run_llm_router_baseline
 
 
 def test_llm_router_baseline_heuristic_reports_valid_plans(tmp_path):
@@ -237,13 +237,88 @@ def test_llm_router_api_mode_saves_raw_response_and_fixed_temperature(tmp_path, 
     assert payload["task_results"][0]["response_source"] == "api"
     assert payload["task_results"][0]["raw_response"] == raw_workflow
     assert payload["task_results"][0]["api_metadata"]["api_model"] == "test-router-model"
+    assert payload["task_results"][0]["api_metadata"]["api_protocol"] == (
+        "openai_compatible_chat_completions"
+    )
+    assert payload["task_results"][0]["api_metadata"]["request_payload"]["enable_thinking"] is False
+    assert payload["task_results"][0]["api_metadata"]["response_payload"]["id"] == "chatcmpl-test"
+    assert payload["task_results"][0]["prompt_hash"]
+    assert payload["task_results"][0]["request_hash"]
+    assert payload["task_results"][0]["plan_hash"]
     assert payload["task_results"][0]["prompt_messages"]
     assert "secret-key" not in output_path.read_text(encoding="utf-8")
     assert response_log_path.exists()
     response_log_text = response_log_path.read_text(encoding="utf-8")
     response_log_row = json.loads(response_log_text.strip())
     assert response_log_row["raw_response"] == raw_workflow
+    assert response_log_row["prompt_hash"]
+    assert response_log_row["request_hash"]
+    assert response_log_row["plan_hash"]
+    assert response_log_row["api_metadata"]["usage"]["completion_tokens"] == 20
     assert "secret-key" not in response_log_text
+
+
+def test_llm_router_api_mode_loads_explicit_dotenv(tmp_path, monkeypatch):
+    benchmark = tmp_path / "bench.jsonl"
+    benchmark.write_text(
+        json.dumps(
+            {
+                "task_id": "task_1",
+                "raw_user_query": (
+                    "Dock ligand_path=/tmp/lig.sdf protein_path=/tmp/rec.pdbqt "
+                    "pocket_center=[1,2,3] box_size=[20,20,20]."
+                ),
+                "expected_tools": ["vina"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    dotenv = tmp_path / ".env.test"
+    dotenv.write_text(
+        "TEST_ROUTER_KEY=dotenv-secret\nTEST_ROUTER_MODEL=unused\n",
+        encoding="utf-8",
+    )
+    raw_workflow = json.dumps(
+        {
+            "task_id": "task_1",
+            "planner_type": "llm_as_router",
+            "selected_tools": ["vina"],
+            "tool_sequence": [],
+            "expected_outputs": [],
+            "notes": [],
+        }
+    )
+
+    class FakeResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {
+                "id": "dotenv-test",
+                "choices": [{"message": {"content": raw_workflow}, "finish_reason": "stop"}],
+                "usage": {},
+            }
+
+    def fake_post(url, *, headers, json, timeout):
+        assert headers["Authorization"] == "Bearer dotenv-secret"
+        return FakeResponse()
+
+    monkeypatch.setattr(runner_mod.requests, "post", fake_post)
+    output = tmp_path / "out.json"
+    run_llm_router_baseline(
+        benchmark_paths=[benchmark],
+        router_mode="api",
+        output_path=output,
+        project_root=tmp_path,
+        dotenv_path=dotenv,
+        llm_model="dotenv-model",
+        llm_base_url="http://127.0.0.1:9999/v1",
+        llm_api_key_env="TEST_ROUTER_KEY",
+    )
+
+    assert "dotenv-secret" not in output.read_text(encoding="utf-8")
 
 
 def test_llm_router_api_mode_resumes_from_response_log_without_new_api_call(tmp_path, monkeypatch):
@@ -283,7 +358,25 @@ def test_llm_router_api_mode_resumes_from_response_log_without_new_api_call(tmp_
     )
     response_log = tmp_path / "cached.responses.jsonl"
     response_log.write_text(
-        json.dumps({"task_id": "task_1", "raw_response": raw_workflow}, sort_keys=True) + "\n",
+        json.dumps(
+            {
+                "task_id": "task_1",
+                "raw_response": raw_workflow,
+                "recorded_at": "2026-07-25T00:00:00Z",
+                "prompt_hash": "cached-prompt-hash",
+                "request_hash": "cached-request-hash",
+                "api_metadata": {
+                    "api_model": "test-router-model",
+                    "usage": {"total_tokens": 12},
+                    "request_payload": {
+                        "model": "test-router-model",
+                        "messages": [{"role": "user", "content": "cached"}],
+                    },
+                },
+            },
+            sort_keys=True,
+        )
+        + "\n",
         encoding="utf-8",
     )
 
@@ -305,3 +398,56 @@ def test_llm_router_api_mode_resumes_from_response_log_without_new_api_call(tmp_
 
     assert payload["row"]["valid_schema_count"] == 1
     assert payload["task_results"][0]["response_source"] == "responses_jsonl"
+    assert payload["task_results"][0]["api_metadata"]["usage"]["total_tokens"] == 12
+    assert payload["task_results"][0]["prompt_hash"] == "cached-prompt-hash"
+    assert payload["task_results"][0]["request_hash"] == "cached-request-hash"
+    assert payload["task_results"][0]["api_response_recorded_at"] == "2026-07-25T00:00:00Z"
+
+
+def test_llm_router_accepts_single_markdown_json_fence_without_repairing_content(tmp_path):
+    benchmark = tmp_path / "bench.jsonl"
+    benchmark.write_text(
+        json.dumps(
+            {
+                "task_id": "task_1",
+                "raw_user_query": (
+                    "Dock ligand_path=/tmp/lig.sdf protein_path=/tmp/rec.pdbqt "
+                    "pocket_center=[1,2,3] box_size=[20,20,20]."
+                ),
+                "expected_tools": ["vina"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    workflow = {
+        "task_id": "task_1",
+        "planner_type": "llm_as_router",
+        "selected_tools": ["vina"],
+        "tool_sequence": [],
+        "expected_outputs": [],
+        "notes": [],
+    }
+    responses = tmp_path / "responses.jsonl"
+    responses.write_text(
+        json.dumps(
+            {
+                "task_id": "task_1",
+                "raw_response": "```json\n" + json.dumps(workflow) + "\n```",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = run_llm_router_baseline(
+        benchmark_paths=[benchmark],
+        responses_jsonl=responses,
+        router_mode="api_replay",
+        output_path=tmp_path / "out.json",
+        project_root=tmp_path,
+    )
+
+    assert payload["row"]["valid_json_count"] == 1
+    assert payload["row"]["valid_schema_count"] == 1
+    assert payload["task_results"][0]["response_normalization"] == "markdown_json_fence_removed"

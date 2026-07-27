@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from CAi.toolkit.agent_planner.rdkit_property_runner import run_property_verifier_summary
+from egvr.rdkit_property_runner import run_property_verifier_summary
 
 
 def test_rdkit_property_runner_writes_property_and_verifier_rows(tmp_path):

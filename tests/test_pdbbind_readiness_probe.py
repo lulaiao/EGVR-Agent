@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from CAi.toolkit.agent_planner.pdbbind_readiness_probe import run_pdbbind_readiness_probe
+from egvr.pdbbind_readiness_probe import run_pdbbind_readiness_probe
 
 
 def test_pdbbind_readiness_probe_detects_ready_candidate(tmp_path):

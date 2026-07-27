@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from CAi.toolkit.agent_planner.task_schema import (
+from egvr.task_schema import (
     CandidateRecord,
     ParsedTask,
     PlannedToolCall,

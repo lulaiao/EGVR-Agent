@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from CAi.toolkit.agent_planner.executor import WorkflowExecutor
-from CAi.toolkit.agent_planner.rule_planner import plan_workflow
-from CAi.toolkit.agent_planner.task_schema import ParsedTask, TaskConstraints
+from egvr.executor import WorkflowExecutor
+from egvr.rule_planner import plan_workflow
+from egvr.task_schema import ParsedTask, TaskConstraints
 
 
 def test_executor_runs_mock_generation_and_batch_scscore():
@@ -59,6 +59,60 @@ def test_executor_skips_conditional_fallback_after_successful_rxnflow():
     assert [call.tool_name for call in calls] == ["rxnflow", "reinvent4_denovo"]
     assert calls[1].metadata["skipped"] is True
     assert [candidate.smiles for candidate in candidates] == ["CCO"]
+
+
+def test_executor_keeps_eager_conditional_fallback_by_default_after_rxnflow_failure():
+    task = ParsedTask(
+        task_id="task-pocket-eager-fallback",
+        raw_user_query="generate for pocket",
+        task_type="pocket_conditioned_generation",
+        protein_path="agent_workspace/1HVR.pdb",
+        pocket_center=[1, 2, 3],
+    )
+    workflow = plan_workflow(task)
+    executor = WorkflowExecutor(
+        tool_functions={
+            "rxnflow": lambda **kwargs: {"success": False, "error": "controlled failure"},
+            "reinvent4_denovo": lambda **kwargs: {"success": True, "molecules_smiles": ["CCC"]},
+        }
+    )
+
+    calls, candidates = executor.execute(task, workflow)
+
+    assert [call.tool_name for call in calls] == ["rxnflow", "reinvent4_denovo"]
+    assert calls[0].success is False
+    assert calls[1].success is True
+    assert calls[1].metadata.get("skipped") is not True
+    assert [candidate.smiles for candidate in candidates] == ["CCC"]
+
+
+def test_executor_defers_declared_fallback_when_benchmark_marker_is_set():
+    task = ParsedTask(
+        task_id="task-pocket-deferred",
+        raw_user_query="generate for pocket",
+        task_type="pocket_conditioned_generation",
+        protein_path="agent_workspace/1HVR.pdb",
+        pocket_center=[1, 2, 3],
+    )
+    workflow = plan_workflow(task)
+    workflow.tool_sequence[1].parameters["defer_until_repair"] = True
+    executor = WorkflowExecutor(
+        tool_functions={
+            "rxnflow": lambda **kwargs: {"success": False, "error": "controlled failure"},
+            "reinvent4_denovo": lambda **kwargs: {"success": True, "molecules_smiles": ["CCC"]},
+        }
+    )
+
+    calls, candidates = executor.execute(task, workflow)
+
+    assert calls[0].success is False
+    assert calls[1].metadata == {
+        "skipped": True,
+        "deferred": True,
+        "fallback_for": "rxnflow",
+    }
+    assert calls[1].outputs["reason"] == "deferred_until_repair"
+    assert candidates == []
 
 
 def test_executor_records_tool_failure_without_swallowing_error():

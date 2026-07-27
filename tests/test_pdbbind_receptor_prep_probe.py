@@ -3,7 +3,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from CAi.toolkit.agent_planner.pdbbind_receptor_prep_probe import (
+from egvr.pdbbind_receptor_prep_probe import (
     classify_receptor_prep_failure,
     run_pdbbind_receptor_prep_probe,
 )

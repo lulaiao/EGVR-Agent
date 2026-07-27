@@ -18,8 +18,12 @@ dist/
 logs/
 agent_workspace/
 tool_fill_logs/
-CAi/logs/
-CAi/toolkit/server/workspace/
+artifact_outputs/
+external_backends/
+private_benchmarks/
+raw_responses/
+response_logs/
+traces/
 workspace/jobs/
 
 # Paper upload/output bundles
@@ -48,18 +52,18 @@ CrossDocked*/
 LIT-PCBA*/
 
 # Vendored tool source, model payloads, and checkpoints
-CAi/toolkit/server/tools/*/REINVENT*/
-CAi/toolkit/server/tools/*/RxnFlow/
-CAi/toolkit/server/tools/*/autodock_vina/
-CAi/toolkit/server/tools/*/models/
-CAi/toolkit/server/tools/*/trained_models/
-CAi/toolkit/server/tools/*/checkpoints/
-CAi/toolkit/server/tools/*/chemprop_model/
-CAi/toolkit/server/tools/*/*_model/
+third_party_tools/
+model_weights/
+checkpoints/
 *.ckpt
 *.pt
 *.pth
 *.pkg
+*.bin
+*.safetensors
+*.onnx
+*.npy
+*.npz
 
 # OS/editor noise
 .DS_Store

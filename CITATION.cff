@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use EGVR-Agent, please cite this software artifact and the accompanying paper."
+title: "EGVR-Agent: Execution-Grounded Verification and Repair for Biomedical Tool-Using Agents"
+type: software
+version: 0.2.0
+date-released: 2026-07-27
+authors:
+  - family-names: "Contributors"
+    given-names: "EGVR-Agent"
+repository-code: "https://github.com/lulaiao/EGVR-Agent"
+url: "https://github.com/lulaiao/EGVR-Agent"
+license: Apache-2.0
+keywords:
+  - tool-using agents
+  - execution verification
+  - verifier-guided repair
+  - biomedical agents
+  - reproducibility

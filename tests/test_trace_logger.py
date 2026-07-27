@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 
-from CAi.toolkit.agent_planner.task_schema import CandidateRecord, ParsedTask, PlannedWorkflow, ToolCallRecord, VerifierResult
-from CAi.toolkit.agent_planner.trace_logger import JSONLTraceLogger, build_trace_payload
+from egvr.task_schema import CandidateRecord, ParsedTask, PlannedWorkflow, ToolCallRecord, VerifierResult
+from egvr.trace_logger import JSONLTraceLogger, build_trace_payload
 
 
 def test_build_trace_payload_has_required_fields():

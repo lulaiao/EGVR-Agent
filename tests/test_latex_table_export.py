@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from CAi.toolkit.agent_planner.latex_table_export import escape_latex, export_latex_tables
+from egvr.latex_table_export import escape_latex, export_latex_tables
 
 
 def test_export_latex_tables_writes_paper_table_drafts(tmp_path):
@@ -1026,7 +1026,7 @@ def test_export_latex_tables_writes_paper_table_drafts(tmp_path):
     assert r"\label{tab:robustness}" in robustness_tex
 
     robustness_repeated_tex = (output_dir / "robustness_repeated_table.tex").read_text(encoding="utf-8")
-    assert "full copilot" in robustness_repeated_tex
+    assert "EGVR-Agent" in robustness_repeated_tex
     assert "44.4\\% +/- 0.0\\%" in robustness_repeated_tex
     assert r"\label{tab:robustness-repeated}" in robustness_repeated_tex
 
@@ -1063,7 +1063,7 @@ def test_export_latex_tables_writes_paper_table_drafts(tmp_path):
 
     ablation_tex = (output_dir / "ablation_table.tex").read_text(encoding="utf-8")
     assert "rule-based planner & 4.0 & 0.0 & 100.0\\% & 100.0\\% & 1/9" in ablation_tex
-    assert "full copilot & 4.0 & 0.0 & 100.0\\% & 100.0\\% & 4/9" in ablation_tex
+    assert "EGVR-Agent & 4.0 & 0.0 & 100.0\\% & 100.0\\% & 4/9" in ablation_tex
     assert "4/6" in ablation_tex
     assert r"\label{tab:ablation-tool-repair}" in ablation_tex
 
@@ -1073,7 +1073,7 @@ def test_export_latex_tables_writes_paper_table_drafts(tmp_path):
     assert r"\label{tab:repair-ablation}" in repair_ablation_tex
 
     repair_ablation_repeated_tex = (output_dir / "repair_ablation_repeated_table.tex").read_text(encoding="utf-8")
-    assert "full copilot" in repair_ablation_repeated_tex
+    assert "EGVR-Agent" in repair_ablation_repeated_tex
     assert "100.0\\% +/- 0.0\\%" in repair_ablation_repeated_tex
     assert r"\label{tab:repair-ablation-repeated}" in repair_ablation_repeated_tex
 

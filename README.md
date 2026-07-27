@@ -1,89 +1,126 @@
-# FullCopilot
+# EGVR-Agent
 
-FullCopilot is a trustworthy biomedical tool-using agent framework. It parses a user request into a structured task, selects task-relevant tools, executes planned calls, and verifies whether the resulting evidence is sufficient to mark the task as complete.
+EGVR-Agent is the research artifact for **Evidence Before Success:
+Execution-Grounded Verification and Targeted Repair for Biomedical Tool-Using
+Agents**.
 
-## Core Idea
+The repository implements an evidence-first reliability layer around external
+tools. A task is complete only when the executor's recorded outputs satisfy the
+task-specific verifier. Missing or malformed evidence can authorize a bounded
+retry or declared fallback; otherwise the run remains explicitly incomplete.
 
-FullCopilot is not about exposing more tools to a language model. It focuses on execution evidence: which tools were selected, why they were called, what they returned, which checks passed, and whether missing evidence should trigger repair, fallback, or an explicit incomplete status.
+## What Is Implemented
 
-## Features
+- Structured task, workflow, tool-call, candidate, evidence, and verifier records.
+- Task-conditioned planning over a typed tool registry.
+- Deterministic dispatch of declared calls, without runtime LLM-written code.
+- Output normalization across heterogeneous backends.
+- Execution-grounded evidence checks and conservative success gating.
+- Verifier-guided retry/fallback with explicit repair budgets.
+- JSONL traces and consistency audits.
+- Controlled reliability, tool-menu, LLM-router, and biomedical evidence runners.
 
-- Parse natural-language requests into `ParsedTask`.
-- Build task-conditioned `PlannedWorkflow` objects.
-- Execute tools or offline wrappers through a structured executor.
-- Normalize tool outputs into candidates and evidence records.
-- Verify outputs, scores, evidence fields, and provenance before declaring success.
-- Apply conservative repair or fallback when evidence is missing.
-- Save JSONL execution traces for reproducibility, audit, and future planner learning.
-- Provide benchmark runners, baseline runners, and release hygiene checks.
+The repository is intentionally a research artifact rather than a general chat
+application. It contains no Web UI, conversation manager, REPL shell, model
+weights, private traces, or bundled scientific tools.
 
 ## Repository Layout
 
 ```text
-FullCopilot/
-├── CAi/
-│   ├── CAi_agent/                 # compatible agent shell
-│   └── toolkit/
-│       ├── functions/             # agent-facing tool wrappers
-│       ├── server/                # optional tool server wrappers
-│       └── agent_planner/         # planning, execution, verification, tracing
-├── tests/                         # unit tests, no API keys required
-├── docs/                          # architecture and release notes
-├── scripts/                       # release hygiene checks
-└── pyproject.toml
+egvr/
+├── task_schema.py                # Typed execution records
+├── task_parser.py                # Deterministic task normalization
+├── rule_planner.py               # Task-conditioned workflow construction
+├── tool_registry.py              # Typed tool capabilities and dependencies
+├── executor.py                   # Structured dispatch and call recording
+├── result_normalizer.py          # Backend output normalization
+├── verifier.py                   # Evidence-gated task completion
+├── repair.py                     # Bounded retry and fallback policies
+├── trace_logger.py               # JSONL provenance
+├── adapters/                     # Optional external backend contract
+├── benchmarks/                   # Lightweight public benchmark definitions
+└── *_runner.py                   # Evaluation and artifact builders
+tests/                            # Network-free regression tests
+scripts/                          # Offline artifact and release audits
+docs/                             # Architecture and reproducibility notes
 ```
 
 ## Quick Start
 
 ```bash
-conda create -n fullcopilot python=3.11
-conda activate fullcopilot
+python -m venv .venv
+source .venv/bin/activate
 pip install -e ".[dev]"
-python -m pytest tests/test_domain_router.py tests/test_clinical_trial_verifier.py tests/test_drug_target_verifier.py
+
+python -m pytest \
+  tests/test_benchmark_runner.py \
+  tests/test_verifier.py \
+  tests/test_repair.py \
+  tests/test_trace_consistency_audit_runner.py
 ```
 
-Run an offline benchmark example:
+Run the network-free paper artifact:
 
 ```bash
-python -m CAi.toolkit.agent_planner.biomedical_benchmark_runner \
-  --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl \
-  --output /tmp/fullcopilot_offline_summary.json
+python scripts/run_offline_artifact.py \
+  --output-dir /tmp/egvr_artifact
 ```
 
-Build a compact biomedical generalization table:
+Run one lightweight benchmark:
 
 ```bash
-python -m CAi.toolkit.agent_planner.biomedical_generalization_table \
-  --benchmark CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl \
-  --benchmark CAi/toolkit/agent_planner/benchmarks/drug_target_evidence_v2_offline.jsonl \
-  --output /tmp/biomedical_generalization_table.json
-```
-
-Run a mock benchmark example:
-
-```bash
-python -m CAi.toolkit.agent_planner.benchmark_runner \
-  --benchmark CAi/toolkit/agent_planner/benchmarks/molecular_agent_tasks.example.jsonl \
+python -m egvr.benchmark_runner \
+  --benchmark egvr/benchmarks/molecular_agent_tasks.example.jsonl \
   --execution-mode mock \
-  --output /tmp/fullcopilot_mock_summary.json
+  --planner-baseline egvr_agent \
+  --output /tmp/egvr_mock_summary.json
 ```
 
-## Optional Tool Server
+## Optional External Tools
 
-Some real tool executions can use the local tool server:
+Real execution is connected through the small HTTP contract in
+`egvr.adapters.tool_server`. Set:
 
 ```bash
-python -m CAi.toolkit.server.app
+export EGVR_TOOL_SERVER_URL=http://127.0.0.1:8001
 ```
 
-Tool source code, model weights, generated workspaces, and large datasets are not included in this repository. Configure those paths locally and keep them outside version control.
+The server must expose:
 
-## Release Hygiene
+- `POST /run/{tool}/{action}`
+- `GET /job/{job_id}`
+- `GET /health`
 
-Before publishing:
+Scientific tool implementations, environments, model weights, and datasets are
+not distributed here. This keeps the reliability framework separable from any
+particular molecular or clinical backend.
+
+## Scope
+
+Public offline tasks demonstrate mechanism behavior and evidence-interface
+transfer. They do not claim molecular-generation quality, clinical prediction,
+DTI, ADMET, or drug-discovery state of the art. Real-tool paper measurements,
+provider responses, private backend I/O, and licensed datasets are not included.
+
+The legacy result identifier `full_copilot` remains readable for artifact
+compatibility. New runs should use `egvr_agent`.
+
+## Reproducibility
+
+- [Artifact overview](ARTIFACT.md)
+- [Architecture](docs/architecture.md)
+- [Reproducibility guide](docs/reproducibility.md)
+- [Paper-to-code map](docs/paper_artifact_mapping.md)
+- [Release checklist](docs/release_checklist.md)
+- [Naming and standalone migration](docs/naming_and_migration.md)
+
+Before release:
 
 ```bash
 python scripts/audit_release_tree.py --root .
 ```
 
-The audit checks for local absolute paths, credential-like tokens, runtime logs, tool workspaces, and large binary/model artifacts.
+## License And Attribution
+
+The repository is released under Apache-2.0. See [NOTICE](NOTICE) for the
+historical compatibility boundary and third-party attribution.

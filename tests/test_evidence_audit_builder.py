@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from CAi.toolkit.agent_planner.evidence_audit_builder import (
+from egvr.evidence_audit_builder import (
     build_and_write_evidence_audit_table,
     build_evidence_audit_rows,
 )

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from CAi.toolkit.agent_planner.rule_planner import RuleBasedPlanner, plan_workflow
-from CAi.toolkit.agent_planner.task_schema import ParsedTask, TaskConstraints
+from egvr.rule_planner import RuleBasedPlanner, plan_workflow
+from egvr.task_schema import ParsedTask, TaskConstraints
 
 
 def _tool_names(workflow):

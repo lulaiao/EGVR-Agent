@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from CAi.toolkit.agent_planner.biomedical_generalization_table import (
+from egvr.biomedical_generalization_table import (
     BIOMEDICAL_GENERALIZATION_COLUMNS,
     build_biomedical_generalization_table,
     write_biomedical_generalization_table,
@@ -12,8 +12,8 @@ from CAi.toolkit.agent_planner.biomedical_generalization_table import (
 def test_biomedical_generalization_table_combines_v2_slices(tmp_path):
     table = build_biomedical_generalization_table(
         [
-            "CAi/toolkit/agent_planner/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl",
-            "CAi/toolkit/agent_planner/benchmarks/drug_target_evidence_v2_offline.jsonl",
+            "egvr/benchmarks/clinical_trial_outcome_prediction_v2_offline.jsonl",
+            "egvr/benchmarks/drug_target_evidence_v2_offline.jsonl",
         ]
     )
 

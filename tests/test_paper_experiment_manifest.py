@@ -4,12 +4,12 @@ import json
 from pathlib import Path
 
 
-MANIFEST_PATH = Path("CAi/toolkit/agent_planner/configs/paper_experiment_manifest.json")
+MANIFEST_PATH = Path("egvr/configs/paper_experiment_manifest.json")
 ALLOWED_BASELINES = {
     "all_tool_agent",
     "fixed_pipeline",
     "rule_based_planner",
-    "full_copilot",
+    "egvr_agent",
     "scheduled_fallback_no_verifier",
     "verifier_only_no_repair",
 }
@@ -19,7 +19,7 @@ def test_public_paper_experiment_manifest_is_portable():
     payload = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 
     assert payload["manifest_id"] == "paper_experiment_manifest_v1"
-    assert payload["project"] == "FullCopilot"
+    assert payload["project"] == "EGVR-Agent"
     assert payload["scope"]["public_release"] is True
     assert set(payload["baselines"]) == ALLOWED_BASELINES
     assert payload["experiment_matrix"]

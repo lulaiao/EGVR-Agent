@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from CAi.toolkit.agent_planner.pdbbind_prepared_pilot_generator import (
+from egvr.pdbbind_prepared_pilot_generator import (
     GATE_BLOCKED_INSUFFICIENT_PREPARED_TARGETS,
     GATE_READY,
     build_prepared_pilot_gate_report,

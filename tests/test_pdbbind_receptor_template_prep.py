@@ -3,7 +3,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from CAi.toolkit.agent_planner.pdbbind_receptor_template_prep import run_pdbbind_receptor_template_prep
+from egvr.pdbbind_receptor_template_prep import run_pdbbind_receptor_template_prep
 
 
 def test_template_prep_resolves_histidine_ambiguity(tmp_path):

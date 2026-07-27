@@ -1,4 +1,4 @@
-"""Audit a FullCopilot release tree for files that should not be published."""
+"""Audit an EGVR-Agent release tree for files that should not be published."""
 
 from __future__ import annotations
 
@@ -18,6 +18,11 @@ BLOCKED_DIR_NAMES = {
     "tool_fill_logs",
     "datasets",
     "paper/upload",
+    "external_backends",
+    "private_benchmarks",
+    "raw_responses",
+    "response_logs",
+    "traces",
 }
 BLOCKED_FILE_NAMES = {".env", "main.pdf"}
 BLOCKED_SUFFIXES = {
@@ -30,22 +35,36 @@ BLOCKED_SUFFIXES = {
     ".gz",
     ".pkl",
     ".pickle",
+    ".bin",
+    ".safetensors",
+    ".onnx",
+    ".npy",
+    ".npz",
+    ".7z",
 }
 LOCAL_PATH_PATTERNS = (
     re.compile(r"/data/ssd1/lla"),
     re.compile(r"/home/lula"),
     re.compile(r"/mnt/shared-storage"),
-    re.compile(r"CAi_copilot"),
+    re.compile(r"/(?:data|home)/[^\s]*/CAi_copilot"),
 )
 SECRET_PATTERNS = (
     re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"),
+    re.compile(r"\bAIza[0-9A-Za-z_-]{30,}\b"),
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{30,}\b"),
     re.compile(r"\bapi[_-]?key\s*[:=]\s*[A-Za-z0-9_-]{24,}\b", re.IGNORECASE),
 )
 MAX_FILE_BYTES = 5_000_000
+FORBIDDEN_RELEASE_ROOTS = {
+    "CAi",
+}
 
 
 def audit(root: Path) -> list[str]:
     findings: list[str] = []
+    for name in sorted(FORBIDDEN_RELEASE_ROOTS):
+        if (root / name).exists():
+            findings.append(f"legacy application root must not be released: {name}")
     for path in root.rglob("*"):
         rel = path.relative_to(root)
         rel_text = rel.as_posix()
@@ -97,7 +116,7 @@ def _read_text(path: Path) -> str | None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Audit a FullCopilot release tree.")
+    parser = argparse.ArgumentParser(description="Audit an EGVR-Agent release tree.")
     parser.add_argument("--root", default=".")
     args = parser.parse_args()
     root = Path(args.root).resolve()
